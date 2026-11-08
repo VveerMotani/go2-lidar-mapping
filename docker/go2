@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# The one command inside the Go2 walk processor image.
+#
+#   docker run --rm -v <walks folder>:/walks go2-walks <command> [walk]
+#
+# <walk> is a folder name inside the mounted walks folder, or a .zip that the
+# robot dashboard's Download button made; a zip is unpacked beside itself first.
+
+NOTES=/opt/go2/notes
+WALKS=/walks
+
+bold() { printf "\n\033[1m%s\033[0m\n" "$1"; }
+bad()  { printf "  \033[31mX\033[0m %s\n" "$1"; }
+ok()   { printf "  \033[32m/\033[0m %s\n" "$1"; }
+
+usage() {
+  cat <<'EOF'
+Go2 walk processor
+
+  process <walk>     recording -> bag -> scan-matched map -> dense cloud
+  map <walk>         rebuild only the maps, from a bag already made
+  inspect <walk>     pass/fail checks on a processed walk's bag
+  list               the walks in the mounted folder and how far each has got
+  selftest           check the image itself (driver, ROS, Python)
+  bash               a shell inside the image
+
+<walk> is a folder name inside the mounted walks folder, or a .zip from the
+robot dashboard's Download button. Mount your walks folder at /walks:
+
+  docker run --rm -v "C:\Users\me\go2-walks:/walks" go2-walks process Lab-loop-1
+EOF
+}
+
+# Resolve a walk argument to a folder, unpacking a zip if that is what it is.
+resolve() {
+  local w="$1"
+  [ -z "$w" ] && { bad "which walk? try: list"; exit 1; }
+  case "$w" in /*) ;; *) w="$WALKS/$w" ;; esac
+  if [ -f "$w" ] && [ "${w%.zip}" != "$w" ]; then
+    # The folder name inside the zip, not the zip's own name: a browser saves a
+    # second copy as "walk (1).zip", which still holds walk/.
+    local name
+    name="$(unzip -Z1 "$w" 2>/dev/null | head -1 | cut -d/ -f1)"
+    [ -z "$name" ] && name="$(basename "$w" .zip)"
+    if [ -f "$WALKS/$name/lidar.pcap" ]; then
+      ok "already unpacked: $name" >&2
+    else
+      ok "unpacking $(basename "$w")" >&2
+      unzip -q -o "$w" -d "$WALKS" || { bad "could not unpack $w" >&2; exit 1; }
+    fi
+    w="$WALKS/$name"
+  fi
+  [ -d "$w" ] || { bad "no walk folder at $w" >&2; exit 1; }
+  echo "$w"
+}
+
+results() {
+  local w="$1" n
+  n="$(basename "$w")"
+  bold "Open these"
+  for f in "bag/bag_0.mcap" "map3d/${n}_map/${n}_map_0.mcap" "map3d/${n}_map.ply" "map3d/${n}_dense.ply"; do
+    [ -f "$w/$f" ] && ok "$n/$f   ($(du -h "$w/$f" | cut -f1))"
+  done
+  echo "  .mcap files open in Foxglove (File > Open local file); .ply in CloudCompare."
+  echo "  Foxglove layout for the map file: notes/foxglove/go2_walk_map.json in the repo."
+}
+
+cmd="${1:-help}"
+shift || true
+case "$cmd" in
+  process)
+    w="$(resolve "${1:-}")" || exit 1; shift
+    bash "$NOTES/process_walk.sh" "$w" "$@"; status=$?
+    [ "$status" = 0 ] && results "$w"
+    exit $status ;;
+  map)
+    w="$(resolve "${1:-}")" || exit 1; shift
+    bash "$NOTES/process_walk.sh" "$w" --map-only "$@"; status=$?
+    [ "$status" = 0 ] && results "$w"
+    exit $status ;;
+  inspect)
+    w="$(resolve "${1:-}")" || exit 1
+    source "$GO2_WS"/setup.env.sh >/dev/null 2>&1
+    exec python3 "$NOTES/inspect_bag.py" "$w/bag" ;;
+  list)
+    bold "Walks in the mounted folder"
+    found=0
+    for d in "$WALKS"/*/; do
+      [ -f "$d/lidar.pcap" ] || continue
+      found=1
+      n="$(basename "$d")"
+      state="recorded"
+      [ -f "$d/bag/bag_0.mcap" ] && state="bag made"
+      [ -f "$d/map3d/${n}_map.ply" ] && state="mapped"
+      odom="odometry"; [ -s "$d/odom.csv" ] || odom="NO odometry (cannot be mapped)"
+      printf "  %-32s %-10s %s\n" "$n" "$state" "$odom"
+    done
+    for z in "$WALKS"/*.zip; do
+      [ -f "$z" ] && { found=1; printf "  %-32s %s\n" "$(basename "$z")" "zip, not unpacked yet"; }
+    done
+    [ "$found" = 0 ] && echo "  none. Is the right folder mounted at /walks?"
+    exit 0 ;;
+  selftest)
+    source "$GO2_WS"/setup.env.sh >/dev/null 2>&1
+    source "$GO2_WS"/install/setup.bash >/dev/null 2>&1
+    bold "Go2 walk processor self-test"
+    ros2 pkg prefix hesai_ros_driver >/dev/null 2>&1 && ok "Hesai driver built" || bad "Hesai driver missing"
+    python3 -c "import rosbag2_py" 2>/dev/null && ok "rosbag2 (mcap)" || bad "rosbag2_py missing"
+    python3 -W ignore -c "import open3d, numpy, scipy, cv2; print(open3d.__version__, numpy.__version__, scipy.__version__, cv2.__version__)" \
+      | sed 's/^/  \/ open3d, numpy, scipy, opencv: /'
+    [ -f /opt/go2/config/xt16_correction.csv ] && ok "XT16 calibration baked in" || bad "no XT16 calibration"
+    [ -f /opt/go2/config/lidar_mount.json ] && ok "LiDAR mount baked in" || echo "  - no lidar_mount.json (documented mount will be used)"
+    [ -f /opt/go2/config/camera_mount.json ] && ok "camera mount baked in" || echo "  - no camera_mount.json yet (depth kept as images)"
+    echo "  rmem_max $(cat /proc/sys/net/core/rmem_max) bytes (10 MB wanted; less still works, checked per walk)"
+    [ -d "$WALKS" ] && ok "walks folder mounted" || bad "nothing mounted at /walks"
+    exit 0 ;;
+  bash|sh|shell)
+    exec bash "$@" ;;
+  help|-h|--help)
+    usage ;;
+  *)
+    exec "$cmd" "$@" ;;
+esac

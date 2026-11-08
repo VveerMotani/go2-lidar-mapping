@@ -1,0 +1,40 @@
+{
+  "parent": "base_link",
+  "child": "hesai_lidar",
+  "xyz": [
+    0.171,
+    0.0,
+    0.0908
+  ],
+  "rpy_deg": [
+    0.784,
+    -0.533,
+    90.95
+  ],
+  "source": "position from Unitree's documentation; yaw from the direction of travel along built maps; roll and pitch fitted from the floor against the IMU over 1487 scans (odom-test-1, odom-test-2)",
+  "yaw_per_walk": {
+    "odom-test-1": 90.89,
+    "odom-test-2": 91.01
+  },
+  "median_disagreement_deg": {
+    "documented_no_tilt": 1.06,
+    "with_this_tilt": 0.573
+  },
+  "per_walk": {
+    "odom-test-1": {
+      "roll_deg": 0.692,
+      "pitch_deg": -0.592,
+      "scans": 924,
+      "median_error_deg": 0.411,
+      "lidar_height_above_floor_m": 0.477
+    },
+    "odom-test-2": {
+      "roll_deg": 0.962,
+      "pitch_deg": -0.438,
+      "scans": 563,
+      "median_error_deg": 0.708,
+      "lidar_height_above_floor_m": 0.472
+    }
+  },
+  "date": "2026-09-17"
+}

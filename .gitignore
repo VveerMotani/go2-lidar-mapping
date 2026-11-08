@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+# Recordings and everything made from them stay out of the repo: a 5-minute
+# walk is several GB. Only calibration files live in walks/.
+walks/*/
+*.mcap
+*.pcap
+*.ply
+*.zip
+depth.stream
+notes/sessions/
+notes/recordings/
+notes/settings.json
+notes/dashboard_static/go2_meshes.bin

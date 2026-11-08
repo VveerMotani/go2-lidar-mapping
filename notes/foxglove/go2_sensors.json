@@ -1,0 +1,196 @@
+{
+  "configById": {
+    "3D!go2sensors": {
+      "cameraState": {
+        "perspective": true,
+        "distance": 9,
+        "phi": 55,
+        "thetaOffset": 200,
+        "targetOffset": [0, 0, 0],
+        "target": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1],
+        "fovy": 45,
+        "near": 0.1,
+        "far": 5000
+      },
+      "followMode": "follow-none",
+      "followTf": "odom",
+      "scene": { "enableStats": false, "backgroundColor": "#050807" },
+      "transforms": { "labelSize": 0.08, "axisScale": 0.4 },
+      "topics": {
+        "/lidar_points": {
+          "visible": true,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/depth/points": {
+          "visible": true,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#39ff88ff"
+        }
+      },
+      "layers": {
+        "grid": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "Grid",
+          "instanceId": "grid",
+          "layerId": "foxglove.Grid",
+          "frameId": "odom",
+          "size": 20,
+          "divisions": 20,
+          "lineWidth": 1,
+          "color": "#1f6f4a66",
+          "position": [0, 0, 0],
+          "rotation": [0, 0, 0],
+          "order": 1
+        }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {}
+    },
+    "Image!go2depth": {
+      "cameraState": {
+        "distance": 20, "perspective": true, "phi": 60,
+        "target": [0, 0, 0], "targetOffset": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1], "thetaOffset": 45,
+        "fovy": 45, "near": 0.5, "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {
+        "imageTopic": "/camera/depth_preview/image_rect_raw",
+        "colorMode": "colormap",
+        "colorMap": "turbo",
+        "minValue": 0,
+        "maxValue": 5000
+      }
+    },
+    "Image!go2color": {
+      "cameraState": {
+        "distance": 20, "perspective": true, "phi": 60,
+        "target": [0, 0, 0], "targetOffset": [0, 0, 0],
+        "targetOrientation": [0, 0, 0, 1], "thetaOffset": 45,
+        "fovy": 45, "near": 0.5, "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {
+        "imageTopic": "/camera/color/image_raw/compressed"
+      }
+    },
+    "Plot!go2rates": {
+      "paths": [
+        { "value": "/go2/rate/lidar.data", "enabled": true, "timestampMethod": "receiveTime", "label": "LiDAR", "color": "#4ade80" },
+        { "value": "/go2/rate/depth.data", "enabled": true, "timestampMethod": "receiveTime", "label": "Depth", "color": "#60a5fa" },
+        { "value": "/go2/rate/depth_cloud.data", "enabled": true, "timestampMethod": "receiveTime", "label": "Depth cloud", "color": "#fbbf24" },
+        { "value": "/go2/rate/color.data", "enabled": false, "timestampMethod": "receiveTime", "label": "Colour", "color": "#f87171" }
+      ],
+      "title": "Frames per second (arriving on the laptop)",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": false,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "minYValue": 0,
+      "sidebarDimension": 240
+    },
+    "Plot!go2delays": {
+      "paths": [
+        { "value": "/go2/delay/lidar.data", "enabled": true, "timestampMethod": "receiveTime", "label": "LiDAR", "color": "#4ade80" },
+        { "value": "/go2/delay/depth.data", "enabled": true, "timestampMethod": "receiveTime", "label": "Depth", "color": "#60a5fa" },
+        { "value": "/go2/delay/depth_cloud.data", "enabled": false, "timestampMethod": "receiveTime", "label": "Depth cloud", "color": "#fbbf24" }
+      ],
+      "title": "Delay, ms (timestamp to arrival)",
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": true,
+      "isSynced": false,
+      "xAxisVal": "timestamp",
+      "followingViewWidth": 60,
+      "minYValue": 0,
+      "sidebarDimension": 240
+    },
+    "RawMessages!go2summary": {
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false,
+      "topicPath": "/go2/sensors.data",
+      "fontSize": 13
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": { "speed": 1 },
+  "layout": {
+    "direction": "row",
+    "splitPercentage": 58,
+    "first": {
+      "direction": "column",
+      "splitPercentage": 88,
+      "first": "3D!go2sensors",
+      "second": "RawMessages!go2summary"
+    },
+    "second": {
+      "direction": "column",
+      "splitPercentage": 50,
+      "first": {
+        "direction": "row",
+        "splitPercentage": 50,
+        "first": "Image!go2depth",
+        "second": "Image!go2color"
+      },
+      "second": {
+        "direction": "column",
+        "splitPercentage": 50,
+        "first": "Plot!go2rates",
+        "second": "Plot!go2delays"
+      }
+    }
+  }
+}

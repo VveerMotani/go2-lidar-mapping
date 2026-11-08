@@ -1,0 +1,37 @@
+{
+  "parent": "base_link",
+  "child": "camera_link",
+  "xyz": [
+    0.3736,
+    0.0204,
+    0.0307
+  ],
+  "rpy_deg": [
+    -1.077,
+    8.763,
+    0.328
+  ],
+  "source": "refined from walk odom-test-2: median 1.2 cm to the LiDAR map",
+  "measured": {
+    "xyz": [
+      0.377,
+      0.02,
+      0.03
+    ],
+    "rpy_deg": [
+      0.0,
+      8.8,
+      0.0
+    ],
+    "source": "tape measurement in base_link: 0.377,0.020,0.030,8.8"
+  },
+  "refined": {
+    "walk": "odom-test-2",
+    "frames": 80,
+    "points": 689684,
+    "median_before_m": 0.0126,
+    "median_after_m": 0.0121,
+    "weak_directions": [],
+    "date": "2026-09-25"
+  }
+}

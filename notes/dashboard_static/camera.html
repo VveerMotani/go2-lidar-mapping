@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go2 cameras</title>
+<link rel="stylesheet" href="/static/app.css">
+<style>
+  /* Just the cameras, nothing else. Made for putting on a second screen. */
+  body { display: flex; flex-direction: column; height: 100vh; }
+  header { flex: none; }
+  .stage { flex: 1; display: grid; gap: 10px; padding: 10px; min-height: 0; }
+  .stage.two { grid-template-columns: 1fr 1fr; }
+  .stage.one { grid-template-columns: 1fr; }
+  figure { margin: 0; position: relative; background: #000;
+           border-radius: 8px; overflow: hidden; min-height: 0; }
+  img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  figcaption { position: absolute; left: 9px; bottom: 7px; color: #cbd2dc;
+               font-size: 12px; background: rgba(0,0,0,.55);
+               padding: 3px 8px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Go2 cameras</h1>
+  <span class="status" id="host"></span>
+  <span class="spacer"></span>
+  <button onclick="layout('one')">Single</button>
+  <button onclick="layout('two')">Both</button>
+  <a href="/" style="font:12px system-ui,sans-serif">&larr; dashboard</a>
+</header>
+
+<div class="stage two" id="stage">
+  <figure><img id="cam2" alt="camera 2"><figcaption>/dev/video2</figcaption></figure>
+  <figure id="fig4"><img id="cam4" alt="camera 4"><figcaption>/dev/video4</figcaption></figure>
+</div>
+
+<script>
+// The camera host comes from the same place as on the dashboard: the server's
+// setting, overridden by the dashboard's settings drawer if one was saved.
+const injected = "__CAMERA_HOST__";
+let host = injected;
+try {
+  const saved = JSON.parse(localStorage.getItem("go2.dashboard") || "{}");
+  if (saved.camhost) host = saved.camhost;
+} catch (e) {}
+
+// "auto" (or "auto:PORT") means "the address you reached this page on" -- see
+// resolveHost() in app.js. Repeated rather than shared because this page is
+// deliberately standalone: it loads no modules, so it can be opened on a phone
+// or a second screen with nothing else running.
+if (host === "auto" || host.startsWith("auto:")) {
+  const port = host.includes(":") ? host.split(":")[1] : "8080";
+  host = `${location.hostname}:${port}`;
+}
+
+document.getElementById("host").textContent = host;
+document.getElementById("cam2").src = `http://${host}/stream?cam=2`;
+document.getElementById("cam4").src = `http://${host}/stream?cam=4`;
+
+function layout(mode) {
+  document.getElementById("stage").className = "stage " + mode;
+  document.getElementById("fig4").style.display = mode === "one" ? "none" : "";
+}
+</script>
+</body>
+</html>

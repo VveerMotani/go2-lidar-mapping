@@ -1,0 +1,378 @@
+/* Go2 dashboard v2.
+   Two themes, chosen in the settings drawer and remembered in localStorage.
+   The default is dark, which is what a robot lab is usually lit like. */
+
+:root {
+  --bg: #0f1115; --card: #171a21; --line: #252a34; --line2: #323844;
+  --fg: #e6e8ec; --dim: #8b93a1; --faint: #5b6472;
+  --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --accent: #60a5fa;
+  color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f6f7f9; --card: #ffffff; --line: #e2e5ea; --line2: #cbd2dc;
+  --fg: #1a1d23; --dim: #616a78; --faint: #99a1ae;
+  --ok: #16a34a; --warn: #b45309; --bad: #dc2626; --accent: #2563eb;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+h1 { font: 600 15px system-ui, sans-serif; margin: 0; }
+a { color: var(--accent); }
+
+/* ---- top bar ---- */
+header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 16px; border-bottom: 1px solid var(--line);
+  background: var(--card); position: sticky; top: 0; z-index: 20;
+}
+header .spacer { flex: 1; }
+.status { color: var(--dim); font: 12px system-ui, sans-serif; }
+/* The route indicator sits next to the stream status and must read as
+   secondary to it: same size, dimmer, with a separator only when it has
+   something to say. */
+.route:not(:empty)::before { content: "·"; margin: 0 6px; opacity: .5; }
+.dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--bad); margin-right: 7px; vertical-align: middle;
+}
+.dot.live { background: var(--ok); }
+
+button, select, a.button {
+  background: var(--card); color: var(--fg);
+  border: 1px solid var(--line2); border-radius: 6px;
+  padding: 5px 10px; font: 12px system-ui, sans-serif; cursor: pointer;
+}
+button:hover, a.button:hover { border-color: var(--accent); }
+/* A link dressed as a button, for downloads. It cannot be disabled, so it is
+   made to look and behave disabled instead. */
+a.button { display: inline-block; text-decoration: none; white-space: nowrap; }
+a.button.disabled { opacity: .4; pointer-events: none; }
+
+/* ---- the "no data" banner ---- */
+#banner {
+  display: none; background: var(--bad); color: #fff;
+  padding: 12px 16px; font: 600 14px system-ui, sans-serif; text-align: center;
+}
+#banner.show { display: block; }
+
+/* ---- layout ----
+   The top row (3D model + cameras) is sized to fit a laptop screen without
+   scrolling; everything else lives below the fold. */
+main { padding: 14px 16px 40px; }
+.top {
+  display: grid; gap: 14px; grid-template-columns: 1.35fr 1fr;
+  height: min(56vh, 520px); margin-bottom: 14px;
+}
+@media (max-width: 900px) { .top { grid-template-columns: 1fr; height: auto; } }
+
+.grid {
+  display: grid; gap: 14px;
+  /* Wide enough that the graph inside a panel has room to be read. Narrower
+     than this and the traces are too cramped to tell apart. */
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  /* Panels stretch to the height of their row. Letting them keep their natural
+     heights instead leaves ragged gaps, because the panels carrying a graph
+     are much taller than the ones that do not. */
+}
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: 10px; padding: 13px; min-width: 0;
+}
+.card.flush { padding: 0; overflow: hidden; display: flex; flex-direction: column; }
+.card h2 {
+  font: 600 11px system-ui, sans-serif; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--dim); margin: 0 0 9px;
+  display: flex; align-items: center; gap: 8px;
+}
+.card h2 .spacer { flex: 1; }
+.card.flush h2 { padding: 12px 13px 0; margin-bottom: 8px; }
+.wide { grid-column: 1 / -1; }
+.hidden { display: none !important; }
+
+/* ---- rows and tables ---- */
+.row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+.row > span:first-child { color: var(--dim); }
+.big { font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  font: 600 10px system-ui, sans-serif; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--faint); text-align: right;
+  padding: 0 0 5px; border-bottom: 1px solid var(--line);
+}
+th:first-child { text-align: left; }
+td { padding: 2px 0; text-align: right; }
+td:first-child { color: var(--dim); text-align: left; }
+tr.hot td { color: var(--bad); }
+
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.bar > i { display: block; height: 100%; background: var(--accent); transition: width .15s; }
+
+/* ---- 3D panel ---- */
+#view { position: relative; flex: 1; min-height: 240px; }
+#view canvas { display: block; width: 100%; height: 100%; }
+#tooltip {
+  position: absolute; display: none; pointer-events: none;
+  background: rgba(9, 11, 15, .92); color: #e6e8ec; border: 1px solid var(--line2);
+  border-radius: 6px; padding: 7px 9px; font-size: 11px; line-height: 1.5;
+  white-space: nowrap; z-index: 5;
+}
+.legend {
+  display: flex; align-items: center; gap: 8px; padding: 8px 13px;
+  border-top: 1px solid var(--line); color: var(--dim); font-size: 11px;
+}
+.legend .scale {
+  flex: 1; height: 7px; border-radius: 4px;
+  background: linear-gradient(90deg, #3b82f6, #4ade80 50%, #fbbf24 75%, #f87171);
+}
+
+/* ---- cameras ---- */
+.cams { display: grid; gap: 10px; grid-template-rows: 1fr 1fr; height: 100%; }
+.cams figure {
+  margin: 0; position: relative; min-height: 0;
+  background: #000; border-radius: 8px; overflow: hidden;
+}
+.cams img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.cams figcaption {
+  position: absolute; left: 8px; bottom: 6px; color: #cbd2dc; font-size: 11px;
+  background: rgba(0, 0, 0, .55); padding: 2px 7px; border-radius: 4px;
+}
+
+/* ---- attitude indicator ---- */
+.attitude { display: flex; gap: 14px; align-items: center; }
+.attitude svg { flex: none; }
+
+/* ---- footprint panel ---- */
+.feet {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 9px;
+  /* Laid out the way you look down on the robot: front row on top. */
+}
+.foot { border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+.foot.contact { border-color: var(--ok); }
+.foot .name { color: var(--dim); font-size: 11px; }
+.foot .val { font-size: 18px; font-weight: 600; }
+
+/* ---- settings drawer ---- */
+#drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 310px; z-index: 30;
+  background: var(--card); border-left: 1px solid var(--line);
+  padding: 16px; overflow-y: auto; transform: translateX(100%);
+  transition: transform .18s ease;
+}
+#drawer.open { transform: none; }
+#drawer h2 { margin-top: 18px; }
+#drawer label {
+  display: flex; align-items: center; gap: 8px; padding: 4px 0;
+  font: 12px system-ui, sans-serif; color: var(--fg); cursor: pointer;
+}
+#drawer input[type="text"], #drawer input[type="number"], #drawer select {
+  width: 100%; background: var(--bg); color: var(--fg);
+  border: 1px solid var(--line2); border-radius: 6px; padding: 6px 8px;
+  font: 12px ui-monospace, monospace;
+}
+#drawer .hint { color: var(--faint); font: 11px system-ui, sans-serif; margin: 3px 0 10px; }
+
+/* Shown in place of a camera frame when the camera server cannot be reached. */
+.camfail {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 4px; text-align: center;
+  color: var(--dim); font: 12px system-ui, sans-serif; padding: 10px;
+}
+.camfail span { color: var(--faint); font-size: 11px; }
+
+/* ---- graphs, sitting inside the panel whose numbers they plot ---- */
+.slot { margin-top: 12px; }
+.slot:empty { display: none; }
+.chart { min-width: 0; }
+.chart.hidden { display: none !important; }
+.chart canvas { width: 100%; height: 128px; display: block; }
+.chart-head {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 0 4px; border-top: 1px solid var(--line);
+  font: 11px system-ui, sans-serif; color: var(--dim);
+}
+.chart-keys { display: flex; align-items: center; gap: 9px; color: var(--faint); }
+.chart-keys i {
+  display: inline-block; width: 9px; height: 2px; border-radius: 1px;
+  margin-right: 4px; vertical-align: middle;
+}
+.chart-now {
+  margin-left: auto; color: var(--fg);
+  font-family: ui-monospace, monospace; font-size: 12px;
+}
+
+/* ---- replay badge ---- */
+.badge {
+  background: var(--warn); color: #101318; border-radius: 5px;
+  padding: 2px 8px; font: 600 11px system-ui, sans-serif;
+  letter-spacing: .04em; white-space: nowrap;
+}
+.badge.hidden { display: none !important; }
+
+/* ---- recording panel ---- */
+.rec { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+@media (max-width: 780px) { .rec { grid-template-columns: 1fr; } }
+.rec-row { display: flex; gap: 8px; align-items: center; }
+.rec-row > input[type="text"], .rec-row > select {
+  flex: 1; min-width: 0; background: var(--bg); color: var(--fg);
+  border: 1px solid var(--line2); border-radius: 6px; padding: 6px 9px;
+  font: 12px ui-monospace, monospace;
+}
+.rec-status {
+  color: var(--faint); font: 11px/1.5 system-ui, sans-serif;
+  margin-top: 7px; min-height: 2.2em;
+}
+button.primary { border-color: var(--accent); color: var(--accent); }
+button.danger { border-color: var(--bad); color: var(--bad); }
+button:disabled { opacity: .4; cursor: not-allowed; }
+button:disabled:hover { border-color: var(--line2); }
+
+.rec-mode {
+  font: 600 11px system-ui, sans-serif; letter-spacing: .05em;
+  padding: 2px 8px; border-radius: 5px; border: 1px solid var(--line2);
+  color: var(--dim);
+}
+.rec-mode.live { color: var(--ok); border-color: var(--ok); }
+.rec-mode.on { color: #fff; background: var(--bad); border-color: var(--bad); }
+.rec-mode.replay { color: #101318; background: var(--warn); border-color: var(--warn); }
+
+/* The delete button once it is armed and the next click will really delete. */
+button.armed {
+  background: var(--bad); color: #fff; border-color: var(--bad);
+}
+
+
+/* --- Walk library ------------------------------------------------------- */
+/* A row per recording, with its checks as small chips. The chips matter more
+   than they look: a walk that fails a check is still a perfectly normal-looking
+   pile of data, and the whole point is to see that before spending two minutes
+   converting it. */
+table.lib { width: 100%; border-collapse: collapse; }
+table.lib th { text-align: left; font-weight: 600; color: var(--dim); }
+table.lib th, table.lib td {
+  padding: 5px 8px; border-bottom: 1px solid var(--line); text-align: left;
+}
+table.lib td.name { font-weight: 600; color: var(--fg); }
+table.lib td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.lib tr:last-child td { border-bottom: none; }
+
+/* Colours come from the theme's own --ok / --bad, so both themes work without
+   a second palette to keep in step. */
+.chip {
+  display: inline-block; margin: 1px 3px 1px 0; padding: 0 7px;
+  border: 1px solid currentColor; border-radius: 9px;
+  font: 11px/17px system-ui, sans-serif; cursor: help;
+}
+.chip.ok  { color: var(--ok); opacity: .75; }
+.chip.bad { color: var(--bad); }
+
+.lib-actions { white-space: nowrap; text-align: right; }
+.lib-actions button { margin-left: 4px; }
+.lib-path {
+  font: 11px ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--dim); user-select: all;
+}
+
+/* The conversion progress bar. Deliberately NOT called .bar: that class is
+   already the battery gauge, and reusing it silently restyled the power panel. */
+.job { margin: 0 0 12px; padding: 10px 12px; border: 1px solid var(--line2);
+       border-radius: 8px; }
+.job.hidden { display: none; }
+.job-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.job-track { height: 8px; background: var(--line); border-radius: 4px;
+             overflow: hidden; }
+.job-fill { display: block; height: 100%; width: 0; background: var(--accent);
+            transition: width .4s linear; }
+.job-fill.failed { background: var(--bad); }
+.job-fill.done   { background: var(--ok); }
+.job-log {
+  max-height: 120px; overflow: auto; margin: 8px 0 0;
+  font: 11px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--dim); white-space: pre-wrap;
+}
+
+
+/* --- Pre-flight and walk progress --------------------------------------- */
+/* The same chip vocabulary as the walk library, so a green chip means the same
+   thing everywhere on the page. */
+.preflight {
+  margin: 0 0 12px; padding: 10px 12px;
+  border: 1px solid var(--line2); border-radius: 8px;
+}
+.preflight.hidden { display: none; }
+.pf-head { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; }
+.pf-head b { font: 600 13px system-ui, sans-serif; }
+.pf-head b.ready { color: var(--ok); }
+.pf-head b.blocked { color: var(--bad); }
+
+/* A pre-flight chip is clickable, not merely hoverable: on a phone at the far
+   end of a corridor there is no hover, and the detail is the whole point. */
+.chip.pf { cursor: pointer; }
+.chip.sel { outline: 1px solid currentColor; outline-offset: 1px; }
+/* The fix, sitting beside the chip it fixes: chip-sized, so the row stays a row. */
+button.chip-fix { margin: 1px 6px 1px 0; padding: 0 8px; border-radius: 9px;
+                  font: 11px/17px system-ui, sans-serif; vertical-align: top; }
+
+.health { display: flex; flex-wrap: wrap; gap: 6px 16px; }
+.health > div { font: 12px system-ui, sans-serif; }
+.health b { font-weight: 600; }
+.health .ok  { color: var(--ok); }
+.health .bad { color: var(--bad); }
+
+#stream-table td:nth-child(2) { font-variant-numeric: tabular-nums; }
+#stream-table td.note { color: var(--dim); }
+#stream-table td.note.bad { color: var(--bad); }
+
+
+/* --- Demo mode ---------------------------------------------------------- */
+/* Everything that can change the robot or the files is removed from the
+   document, not merely dimmed: a visitor with a trackpad should not be able to
+   press Stop by leaning on the screen. Panels that are only useful while
+   working go too, so what is left is the robot, the cameras and its state. */
+:root[data-demo] #panel-sensors,
+:root[data-demo] #panel-record,
+:root[data-demo] #panel-walk,
+:root[data-demo] #panel-library,
+:root[data-demo] #btn-settings,
+:root[data-demo] #drawer,
+:root[data-demo] #panel-model .card-actions,
+:root[data-demo] #panel-model h2 button,
+:root[data-demo] .chart-head .chart-now { display: none !important; }
+
+/* Read at a distance: a wall screen is metres away, not centimetres. */
+:root[data-demo] body { font-size: 17px; }
+:root[data-demo] header h1 { font-size: 22px; }
+:root[data-demo] .card h2 { font-size: 13px; letter-spacing: .12em; }
+:root[data-demo] .row,
+:root[data-demo] table td,
+:root[data-demo] table th { font-size: 16px; }
+:root[data-demo] .status { font-size: 14px; }
+
+/* The colour-mode select stays visible but inert: the legend it labels is
+   meaningless without it, and a disabled control still reads as an
+   explanation. */
+:root[data-demo] #color-mode { pointer-events: none; opacity: .75; }
+
+/* One quiet way out, so nobody has to be told the keyboard shortcut. */
+:root[data-demo] header::after {
+  content: "demo view — press Esc to exit";
+  margin-left: auto; color: var(--faint);
+  font: 12px system-ui, sans-serif;
+}
+
+/* Sensors panel: one small card per switch, side by side when there is room. */
+.sen { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+       gap: 10px; margin-bottom: 10px; }
+.sen.hidden { display: none; }
+.sen-card { border: 1px solid var(--line2); border-radius: 8px; padding: 10px 12px; }
+.sen-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.sen-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); }
+.sen-dot.on { background: var(--ok); }
+.sen-dot.warn { background: var(--warn); }
+.sen-fps { font: 600 15px ui-monospace, monospace; }
+.sen-check { display: inline-flex; align-items: center; gap: 4px;
+             color: var(--dim); font: 12px system-ui, sans-serif; }
+.sen-card .rec-row { margin-bottom: 6px; }

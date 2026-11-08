@@ -1,0 +1,264 @@
+{
+  "configById": {
+    "3D!go2walkmap": {
+      "cameraState": {
+        "perspective": true,
+        "distance": 30,
+        "phi": 45,
+        "thetaOffset": 90,
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.1,
+        "far": 5000
+      },
+      "followMode": "follow-none",
+      "followTf": "map",
+      "scene": {
+        "enableStats": false,
+        "backgroundColor": "#050807"
+      },
+      "transforms": {
+        "labelSize": 0.1,
+        "axisScale": 0.6,
+        "showLabel": false
+      },
+      "topics": {
+        "/map_so_far": {
+          "visible": true,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "z"
+        },
+        "/scan": {
+          "visible": true,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#ffffffcc"
+        },
+        "/track": {
+          "visible": true,
+          "type": "line",
+          "lineWidth": 0.08,
+          "color": "#00ffc8ff"
+        },
+        "/track_odom": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.05,
+          "color": "#ff7a45ff"
+        },
+        "/depth_so_far": {
+          "visible": true,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#39ff88ff"
+        },
+        "/depth_scan": {
+          "visible": true,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "flat",
+          "flatColor": "#b6ffd4ff"
+        },
+        "/depth_points": {
+          "visible": true,
+          "pointSize": 3,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "intensity"
+        },
+        "/dense_map": {
+          "visible": false,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "colorField": "intensity"
+        },
+        "/colour_map": {
+          "visible": true,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0,
+          "colorMode": "rgb",
+          "colorField": "rgb"
+        },
+        "/track_frontend": {
+          "visible": false,
+          "type": "line",
+          "lineWidth": 0.05,
+          "color": "#ffd23fff"
+        }
+      },
+      "layers": {
+        "grid": {
+          "visible": true,
+          "frameLocked": true,
+          "label": "Grid",
+          "instanceId": "grid",
+          "layerId": "foxglove.Grid",
+          "frameId": "map",
+          "size": 60,
+          "divisions": 60,
+          "lineWidth": 1,
+          "color": "#1f6f4a55",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
+          "order": 1
+        }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {}
+    },
+    "Image!go2walkdepth": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 45,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {
+        "imageTopic": "/depth_preview",
+        "colorMode": "colormap",
+        "colorMap": "turbo",
+        "minValue": 0,
+        "maxValue": 4000
+      }
+    },
+    "Image!go2walkcolor": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 45,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {},
+      "transforms": {},
+      "topics": {},
+      "layers": {},
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {
+        "imageTopic": "/color/compressed"
+      }
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "direction": "row",
+    "splitPercentage": 70,
+    "first": "3D!go2walkmap",
+    "second": {
+      "direction": "column",
+      "splitPercentage": 50,
+      "first": "Image!go2walkdepth",
+      "second": "Image!go2walkcolor"
+    }
+  }
+}

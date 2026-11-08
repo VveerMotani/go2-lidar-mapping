@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 640" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <rect width="1200" height="640" rx="14" fill="#0d1014"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8a929c"/>
+    </marker>
+    <style>
+      .t  { fill:#eef0f2; font-size:17px; font-weight:600 }
+      .s  { fill:#aeb4bb; font-size:13.5px }
+      .h  { fill:#eef0f2; font-size:15px; font-weight:700; letter-spacing:.5px }
+      .k  { fill:#7f8790; font-size:12.5px }
+      .box{ fill:#161a20; stroke:#2c323a; stroke-width:1.2 }
+      .ln { stroke:#8a929c; stroke-width:1.6; fill:none; marker-end:url(#a) }
+    </style>
+  </defs>
+
+  <!-- robot -->
+  <rect x="24" y="24" width="360" height="592" rx="12" fill="none" stroke="#2c323a" stroke-dasharray="5 5"/>
+  <text x="44" y="56" class="h">ON THE ROBOT</text>
+  <text x="44" y="76" class="k">Jetson on the Go2 EDU, Ubuntu 20.04, ROS 2 Foxy</text>
+
+  <rect x="44" y="96" width="320" height="76" rx="9" class="box"/>
+  <text x="60" y="124" class="t">Hesai XT16 LiDAR</text>
+  <text x="60" y="146" class="s">16 beams, 10 Hz, about 32,000 points a scan</text>
+  <text x="60" y="164" class="s">raw UDP packets sniffed to lidar.pcap</text>
+
+  <rect x="44" y="184" width="320" height="76" rx="9" class="box"/>
+  <text x="60" y="212" class="t">Go2 body state</text>
+  <text x="60" y="234" class="s">IMU at 500 Hz (rt/lowstate); leg odometry</text>
+  <text x="60" y="252" class="s">and body height (rt/sportmodestate) to CSV</text>
+
+  <rect x="44" y="272" width="320" height="76" rx="9" class="box"/>
+  <text x="60" y="300" class="t">Intel RealSense depth camera</text>
+  <text x="60" y="322" class="s">depth + colour, 848x480 at 15 fps,</text>
+  <text x="60" y="340" class="s">lossless 16-bit depth to depth.stream</text>
+
+  <rect x="44" y="372" width="320" height="104" rx="9" class="box"/>
+  <text x="60" y="400" class="t">Recorder + robot web page</text>
+  <text x="60" y="422" class="s">one clock for every stream; the clock is</text>
+  <text x="60" y="440" class="s">set from the laptop's browser (no RTC);</text>
+  <text x="60" y="458" class="s">pre-flight checks, Start / Stop, Download</text>
+
+  <rect x="44" y="500" width="320" height="96" rx="9" fill="#14202a" stroke="#2f5d7a"/>
+  <text x="60" y="528" class="t">walk.zip</text>
+  <text x="60" y="550" class="s">the 5-minute test walk: 0.5 GB of</text>
+  <text x="60" y="568" class="s">LiDAR + IMU + odometry, plus</text>
+  <text x="60" y="586" class="s">1.2 GB of depth and colour</text>
+
+  <path d="M204 172 v12 M204 260 v12" stroke="#2c323a" stroke-width="1.2"/>
+  <path d="M204 348 v22" class="ln"/>
+  <path d="M204 476 v22" class="ln"/>
+
+  <!-- arrow to laptop -->
+  <path d="M364 548 C 420 548, 420 120, 448 120" class="ln"/>
+  <text x="396" y="330" class="k" transform="rotate(-90 396 330)">HTTP download over the cable</text>
+
+  <!-- laptop -->
+  <rect x="440" y="24" width="736" height="592" rx="12" fill="none" stroke="#2c323a" stroke-dasharray="5 5"/>
+  <text x="460" y="56" class="h">ON ANY LAPTOP, IN ONE DOCKER IMAGE</text>
+  <text x="460" y="76" class="k">ROS 2 Humble, Hesai's driver, Open3D. Nothing to install but Docker; runs offline on loopback.</text>
+
+  <rect x="460" y="96" width="336" height="96" rx="9" class="box"/>
+  <text x="476" y="124" class="t">1-6  Decode and retime</text>
+  <text x="476" y="146" class="s">Hesai's own driver decodes the packets;</text>
+  <text x="476" y="164" class="s">LiDAR clock fitted to the robot's clock</text>
+  <text x="476" y="182" class="s">(offset + drift, residual under 0.05 ms)</text>
+
+  <rect x="460" y="208" width="336" height="112" rx="9" class="box"/>
+  <text x="476" y="236" class="t">7  Scan matching</text>
+  <text x="476" y="258" class="s">each scan deskewed and seeded by leg</text>
+  <text x="476" y="276" class="s">odometry, then point-to-plane ICP against</text>
+  <text x="476" y="294" class="s">the map so far; on stairs the depth camera</text>
+  <text x="476" y="312" class="s">corrects height</text>
+
+  <rect x="460" y="336" width="336" height="96" rx="9" class="box"/>
+  <text x="476" y="364" class="t">7b  Loop closure</text>
+  <text x="476" y="386" class="s">revisited places aligned by ICP, whole track</text>
+  <text x="476" y="404" class="s">adjusted by robust least squares</text>
+  <text x="476" y="422" class="s">(pose graph)</text>
+
+  <rect x="460" y="448" width="336" height="148" rx="9" class="box"/>
+  <text x="476" y="476" class="t">8-10  Dense map and products</text>
+  <text x="476" y="498" class="s">every scan into 2 cm voxels, then cleaned:</text>
+  <text x="476" y="516" class="s">seen by 3+ scans, free-space carving of</text>
+  <text x="476" y="534" class="s">moving things, outlier removal, crop to</text>
+  <text x="476" y="552" class="s">the building; floor plan per level;</text>
+  <text x="476" y="570" class="s">Poisson mesh trimmed to real points</text>
+
+  <path d="M628 192 v14" class="ln"/>
+  <path d="M628 320 v14" class="ln"/>
+  <path d="M628 432 v14" class="ln"/>
+
+  <!-- outputs -->
+  <rect x="824" y="96" width="332" height="500" rx="9" fill="#14202a" stroke="#2f5d7a"/>
+  <text x="844" y="126" class="t">What you open</text>
+
+  <text x="844" y="164" class="t" style="font-size:15px">Foxglove</text>
+  <text x="844" y="186" class="s">the map growing as the robot walks:</text>
+  <text x="844" y="204" class="s">scrub the timeline; raw bag with LiDAR,</text>
+  <text x="844" y="222" class="s">IMU, odometry and depth images (MCAP)</text>
+
+  <text x="844" y="264" class="t" style="font-size:15px">CloudCompare</text>
+  <text x="844" y="286" class="s">dense cleaned cloud (.ply) to measure in;</text>
+  <text x="844" y="304" class="s">keyframe map with the robot's track</text>
+
+  <text x="844" y="346" class="t" style="font-size:15px">Floor plans</text>
+  <text x="844" y="368" class="s">one per level, PNG and ROS map_server</text>
+  <text x="844" y="386" class="s">format (.pgm + .yaml), 5 cm pixels</text>
+
+  <text x="844" y="428" class="t" style="font-size:15px">Mesh</text>
+  <text x="844" y="450" class="s">triangle surface (.ply)</text>
+
+  <text x="844" y="492" class="t" style="font-size:15px">Quality checks</text>
+  <text x="844" y="514" class="s">map_quality.py: end-vs-start error, do</text>
+  <text x="844" y="532" class="s">repeated passes agree, floor thickness;</text>
+  <text x="844" y="550" class="s">inspect_bag.py: pass/fail per bag</text>
+
+  <path d="M796 140 H 822" class="ln"/>
+  <path d="M796 520 H 822" class="ln"/>
+</svg>

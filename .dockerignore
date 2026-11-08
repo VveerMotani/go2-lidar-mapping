@@ -1,0 +1,11 @@
+# The image needs notes/, docker/ and this robot's calibrations in walks/.
+# Everything else stays out, above all the 23 GB WSL disk and the recordings.
+*
+!docker/
+!notes/
+!walks/xt16_correction.csv
+!walks/*.json
+notes/__pycache__/
+notes/recordings/
+notes/sessions/
+notes/dashboard_static/go2_meshes.bin

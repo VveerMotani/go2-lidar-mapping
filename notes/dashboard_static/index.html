@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go2 live</title>
+<link rel="stylesheet" href="/static/app.css">
+<!-- An import map lets the vendored OrbitControls.js say `import ... from "three"`
+     without a bundler and without a CDN. Everything resolves to files this same
+     Python process serves, so the page works with the laptop offline. -->
+<script type="importmap">
+{ "imports": { "three": "/static/vendor/three.module.js" } }
+</script>
+</head>
+<body>
+
+<header>
+  <h1><span class="dot" id="dot"></span>Unitree Go2</h1>
+  <span class="status" id="status">connecting&hellip;</span>
+  <!-- Which of the robot's addresses you reached this page on. Only interesting
+       because the same dashboard is now reachable over the cable and over
+       Wi-Fi, and it is otherwise impossible to tell which one you are using. -->
+  <span class="status route" id="route"></span>
+  <span id="replay-badge" class="badge hidden"></span>
+  <span class="spacer"></span>
+  <button id="btn-settings">Settings</button>
+</header>
+
+<div id="banner">NO DATA &mdash; nothing received for over 2 seconds</div>
+
+<main>
+  <!-- Top row: the model and the cameras, sized to fit without scrolling. -->
+  <div class="top">
+    <div class="card flush" id="panel-model">
+      <h2>Robot
+        <span class="spacer"></span>
+        <button id="btn-reset">Reset view</button>
+        <button id="btn-top">Top</button>
+        <button id="btn-side">Side</button>
+      </h2>
+      <div id="view"><canvas id="canvas"></canvas><div id="tooltip"></div></div>
+      <div class="legend">
+        <select id="color-mode" title="what the joint colours mean">
+          <option value="temperature">colour: motor temperature</option>
+          <option value="torque">colour: motor torque</option>
+          <option value="off">colour: off (material)</option>
+        </select>
+        <span id="legend-lo">20&deg;C</span>
+        <span class="scale"></span>
+        <span id="legend-hi">80&deg;C</span>
+      </div>
+    </div>
+
+    <div class="card flush" id="panel-cameras">
+      <h2>Cameras <span class="spacer"></span>
+        <a href="/camera" target="_blank" style="font:12px system-ui,sans-serif">open standalone &rarr;</a>
+      </h2>
+      <div class="cams" style="padding:0 13px 13px">
+        <figure><img id="cam2" alt="camera 2"><figcaption>/dev/video2</figcaption></figure>
+        <figure><img id="cam4" alt="camera 4"><figcaption>/dev/video4</figcaption></figure>
+      </div>
+    </div>
+  </div>
+
+  <!-- Everything below the fold. -->
+  <div class="grid">
+    <div class="card" id="panel-power"><h2>Power</h2>
+      <div class="big" id="soc">&mdash;</div>
+      <div class="bar"><i id="socbar" style="width:0"></i></div>
+      <div class="row"><span>voltage</span><span id="volts">&mdash;</span></div>
+      <div class="row"><span>current</span><span id="amps">&mdash;</span></div>
+      <div class="row"><span>temperature</span><span id="ptemp">&mdash;</span></div>
+      <div class="slot" id="slot-power"></div>
+    </div>
+
+    <div class="card" id="panel-attitude"><h2>Orientation</h2>
+      <div class="attitude">
+        <svg width="118" height="118" viewBox="-60 -60 120 120">
+          <!-- Artificial horizon. The sky/ground disc rolls and slides with
+               pitch behind a fixed aircraft symbol, the same way a real
+               attitude indicator reads. -->
+          <clipPath id="clip"><circle cx="0" cy="0" r="52"/></clipPath>
+          <g clip-path="url(#clip)">
+            <g id="horizon">
+              <rect x="-160" y="-260" width="320" height="260" fill="#3b82f6"/>
+              <rect x="-160" y="0" width="320" height="260" fill="#78543a"/>
+              <line x1="-160" y1="0" x2="160" y2="0" stroke="#fff" stroke-width="2"/>
+              <g stroke="#fff" stroke-width="1.2" opacity=".75">
+                <line x1="-22" y1="-30" x2="22" y2="-30"/>
+                <line x1="-13" y1="-15" x2="13" y2="-15"/>
+                <line x1="-13" y1="15" x2="13" y2="15"/>
+                <line x1="-22" y1="30" x2="22" y2="30"/>
+              </g>
+            </g>
+          </g>
+          <circle cx="0" cy="0" r="52" fill="none" stroke="#323844" stroke-width="3"/>
+          <g stroke="#fbbf24" stroke-width="2.6" fill="none">
+            <path d="M-30 0 h16 l6 7 l6 -7 h16"/>
+          </g>
+          <!-- roll pointer -->
+          <g id="rollmark" stroke="#e6e8ec" stroke-width="2">
+            <path d="M0 -52 l-5 -8 h10 z" fill="#e6e8ec" stroke="none"/>
+          </g>
+        </svg>
+        <div style="flex:1">
+          <div class="row"><span>roll</span><span id="roll">&mdash;</span></div>
+          <div class="row"><span>pitch</span><span id="pitch">&mdash;</span></div>
+          <div class="row"><span>yaw</span><span id="yaw">&mdash;</span></div>
+          <div class="row"><span>gyro xyz</span><span id="gyro">&mdash;</span></div>
+          <div class="row"><span>accel xyz</span><span id="accel">&mdash;</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="panel-motion"><h2>Motion</h2>
+      <div class="big" id="gait">&mdash;</div>
+      <div class="row"><span>mode</span><span id="mode">&mdash;</span></div>
+      <div class="row"><span>body height</span><span id="bh">&mdash;</span></div>
+      <div class="row"><span>velocity x y z</span><span id="vel">&mdash;</span></div>
+      <div class="row"><span>yaw rate</span><span id="yrate">&mdash;</span></div>
+      <div class="row"><span>position</span><span id="pos">&mdash;</span></div>
+    </div>
+
+    <div class="card" id="panel-feet"><h2>Foot load
+        <span class="spacer"></span>
+        <span id="weight" style="color:var(--dim);font:11px system-ui,sans-serif"></span>
+      </h2>
+      <div class="feet" id="feet"></div>
+      <div class="slot" id="slot-feet"></div>
+    </div>
+
+    <div class="card" id="panel-rates"><h2>Streams</h2>
+      <!-- A rate on its own says nothing: 50 Hz is healthy on rt/lf/lowstate
+           and a fault on rt/lowstate. The server pairs every number with what
+           was expected of it and says so in words. -->
+      <table id="stream-table">
+        <tr><th>stream</th><th>rate</th><th>what that means</th></tr>
+      </table>
+      <div class="row" style="margin-top:8px"><span>last message</span><span id="age">&mdash;</span></div>
+      <div class="row"><span>server uptime</span><span id="uptime">&mdash;</span></div>
+    </div>
+
+    <!-- Depth camera and LiDAR stream switches. The server starts and stops
+         the same scripts used by hand (sensors.py), so this and a terminal
+         always agree about what is running. -->
+    <div class="card wide" id="panel-sensors"><h2>Sensors
+        <span class="spacer"></span>
+        <span id="sen-busy" class="rec-mode">&mdash;</span>
+      </h2>
+      <div id="sen-unavailable" class="rec-status hidden"></div>
+      <div class="sen" id="sen-body">
+        <div class="sen-card">
+          <div class="sen-head"><span class="sen-dot" id="sen-depth-dot"></span>
+            <b>Depth camera</b><span class="spacer"></span>
+            <span class="sen-fps" id="sen-depth-fps">&mdash;</span></div>
+          <div class="rec-row">
+            <select id="sen-mode"></select>
+            <label class="sen-check"><input type="checkbox" id="sen-color"> colour</label>
+          </div>
+          <div class="rec-row">
+            <button id="btn-depth-on" class="primary">Start</button>
+            <button id="btn-depth-off">Stop</button>
+          </div>
+          <div class="rec-status" id="sen-depth-note">&nbsp;</div>
+        </div>
+        <div class="sen-card">
+          <div class="sen-head"><span class="sen-dot" id="sen-lidar-dot"></span>
+            <b>LiDAR to laptop</b><span class="spacer"></span>
+            <span class="sen-fps" id="sen-lidar-pps">&mdash;</span></div>
+          <div class="rec-row">
+            <input type="text" id="sen-dest" placeholder="192.168.123.99">
+          </div>
+          <div class="rec-row">
+            <button id="btn-lidar-on" class="primary">Start</button>
+            <button id="btn-lidar-off">Stop</button>
+          </div>
+          <div class="rec-status" id="sen-lidar-note">&nbsp;</div>
+        </div>
+      </div>
+      <div id="sen-job" class="job hidden">
+        <div class="job-head">
+          <b id="sen-job-title">&mdash;</b>
+          <span class="spacer"></span>
+          <span id="sen-job-elapsed" class="rec-status"></span>
+        </div>
+        <div class="job-track"><i class="job-fill" id="sen-job-bar"></i></div>
+        <pre id="sen-job-log" class="job-log"></pre>
+      </div>
+      <div class="rec-status" id="sen-note">Starting the depth camera stops the
+        Cameras panel (both use the same camera); stopping it brings the panel
+        back. LiDAR off only stops the copy to the laptop: walks still record it.
+        While the depth camera is on, walks record depth too.
+        Rates here are measured on the robot. The rate arriving on the laptop is
+        in the Foxglove layout.</div>
+    </div>
+
+    <div class="card wide" id="panel-record"><h2>Recording
+        <span class="spacer"></span>
+        <span id="rec-mode" class="rec-mode">&mdash;</span>
+      </h2>
+      <div class="rec">
+        <div class="rec-left">
+          <div class="rec-row">
+            <input type="text" id="rec-name" placeholder="name (optional)">
+            <button id="btn-record" class="primary">Start recording</button>
+          </div>
+          <div class="rec-status" id="rec-status">Saves what the robot is doing to a
+            file, so you can play it back later without the robot.</div>
+        </div>
+        <div class="rec-right">
+          <div class="rec-row">
+            <select id="rec-file"><option value="">no recordings yet</option></select>
+            <button id="btn-play">Play</button>
+            <button id="btn-live">Go live</button>
+            <button id="btn-delete" class="danger">Delete</button>
+          </div>
+          <div class="rec-status" id="rec-files">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card wide" id="panel-walk"><h2>Record a walk
+        <span class="spacer"></span>
+        <span id="walk-mode" class="rec-mode">&mdash;</span>
+      </h2>
+      <!-- Ready to record? Every one of these was already true or false before
+           the button was pressed on the two walks that were spoiled, and none
+           of them was visible until the file reached another machine. -->
+      <div id="pf" class="preflight">
+        <div class="pf-head">
+          <b id="pf-title">checking…</b>
+          <span class="spacer"></span>
+          <button id="btn-pf-recheck">Re-check</button>
+        </div>
+        <div class="job-track" style="margin-bottom:8px">
+          <i class="job-fill" id="pf-bar"></i></div>
+        <div id="pf-chips"></div>
+        <div class="rec-status" id="pf-detail">&nbsp;</div>
+      </div>
+
+      <!-- While recording: how long, how big, how much room is left, and
+           whether each stream is actually delivering. -->
+      <div id="walk-progress" class="job hidden">
+        <div class="job-head">
+          <b id="wp-name">&mdash;</b>
+          <span class="rec-status" id="wp-elapsed"></span>
+          <span class="spacer"></span>
+          <span class="rec-status" id="wp-disk"></span>
+        </div>
+        <div class="job-track"><i class="job-fill" id="wp-bar"></i></div>
+        <div id="wp-health" style="margin-top:8px"></div>
+      </div>
+
+      <!-- The moment it stops: is this walk worth keeping? -->
+      <div id="walk-verdict" class="preflight hidden">
+        <div class="pf-head"><b id="wv-title">&mdash;</b></div>
+        <div id="wv-chips"></div>
+        <div class="rec-status" id="wv-detail">&nbsp;</div>
+      </div>
+
+      <div class="rec">
+        <div class="rec-left">
+          <div class="rec-row">
+            <input type="text" id="walk-name" placeholder="name (optional)">
+            <button id="btn-walk" class="primary">Start walk</button>
+          </div>
+          <div class="rec-status" id="walk-status">Saves the raw LiDAR and the
+            IMU for building a map later. About 160 MB a minute.</div>
+        </div>
+        <div class="rec-right">
+          <div class="rec-row">
+            <select id="walk-file"><option value="">no walks yet</option></select>
+            <!-- A link, not a button: the browser handles the download, a
+                 phone can long-press it, and the page never navigates away. -->
+            <a id="btn-walk-download" class="button disabled" download>Download</a>
+            <button id="btn-walk-delete" class="danger">Delete</button>
+          </div>
+          <div class="rec-status" id="walk-files">&nbsp;</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Walks that have been brought back to this machine, what is wrong with
+         each, and the button that turns one into a file you can scrub. Only
+         shown where it can work: the server reports it unavailable when it was
+         started without a walks directory, which is the case on the robot. -->
+    <div class="card wide" id="panel-library"><h2>Walk library
+        <span class="spacer"></span>
+        <span id="lib-root" class="rec-mode">&mdash;</span>
+      </h2>
+
+      <div id="lib-unavailable" class="rec-status hidden"></div>
+
+      <!-- The progress bar for a running conversion. Hidden when idle. -->
+      <div id="lib-job" class="job hidden">
+        <div class="job-head">
+          <b id="job-name">&mdash;</b>
+          <span id="job-stage" class="rec-status"></span>
+          <span class="spacer"></span>
+          <span id="job-elapsed" class="rec-status"></span>
+          <button id="btn-job-cancel" class="danger">Cancel</button>
+        </div>
+        <div class="job-track"><i class="job-fill" id="job-bar"></i></div>
+        <pre id="job-log" class="job-log"></pre>
+      </div>
+
+      <table id="lib-table" class="lib">
+        <tr><th>walk</th><th>when</th><th>length</th><th>size</th>
+            <th>checks</th><th>files</th><th></th></tr>
+      </table>
+      <div class="rec-status" id="lib-note">&nbsp;</div>
+      <div class="slot" id="slot-library"></div>
+    </div>
+
+    <div class="card wide" id="panel-joints"><h2>Joints</h2>
+      <table id="joints">
+        <tr><th>joint</th><th>angle</th><th>velocity</th>
+            <th>torque</th><th>temp</th></tr>
+      </table>
+      <div class="slot" id="slot-joints"></div>
+    </div>
+  </div>
+</main>
+
+<!-- ---- settings drawer ---- -->
+<aside id="drawer">
+  <h1>Settings</h1>
+  <p class="hint">Stored in this browser. Shared defaults are at the bottom.</p>
+
+  <h2>Camera host</h2>
+  <input type="text" id="set-camhost" placeholder="auto:8080">
+  <p class="hint">host:port of camera_server.py. Blank uses the server's own
+     setting (<code id="camhost-default"></code>).</p>
+
+  <h2>Refresh</h2>
+  <input type="number" id="set-hz" min="1" max="30" step="1">
+  <p class="hint">Times per second the page asks for new data. 5 is plenty;
+     the 3D view redraws every frame regardless.</p>
+
+  <h2>Units</h2>
+  <select id="set-units">
+    <option value="deg">degrees</option>
+    <option value="rad">radians</option>
+  </select>
+
+  <h2>Theme</h2>
+  <select id="set-theme">
+    <option value="dark">dark</option>
+    <option value="light">light</option>
+  </select>
+
+  <h2>Panels</h2>
+  <div id="set-panels"></div>
+
+  <h2>Graphs</h2>
+  <div id="set-charts"></div>
+  <p class="hint">Each graph sits inside the panel showing the same numbers.
+     Hiding a panel hides its graph too.</p>
+  <p><button id="btn-clear-history">Clear graph history</button></p>
+
+  <h2>LiDAR mounting</h2>
+  <p class="hint" id="set-offset">&mdash;</p>
+  <p class="hint">Where the XT16 sits relative to <code>base_link</code>. Read
+     from the server so the conversion, the exporter and this page cannot
+     disagree about it.</p>
+
+  <h2>Shared defaults</h2>
+  <p class="hint" id="set-defaults-state">&mdash;</p>
+  <p><button id="btn-save-defaults">Save as this dashboard's defaults</button></p>
+  <p class="hint">Your settings live in this browser. Saving them writes a copy
+     on the server, which is what a browser that has never been here starts
+     from &mdash; a new laptop, a phone, or this one after clearing site data.
+     It never overwrites choices already made in a browser.</p>
+
+  <h2>Demo mode</h2>
+  <p><button id="btn-demo">Open demo view</button></p>
+  <p class="hint">A read-only view for a wall screen or a visitor: bigger, and
+     with nothing clickable that could move the robot or delete a recording.
+     Press <kbd>Esc</kbd> to leave. It is the same page, so it can never fall
+     out of step with this one.</p>
+
+  <h2>Links</h2>
+  <p class="hint"><a href="/camera" target="_blank">/camera</a> &middot;
+     <a href="/data" target="_blank">/data</a> &middot;
+     <a href="/health" target="_blank">/health</a></p>
+
+  <p style="margin-top:20px"><button id="btn-close">Close</button></p>
+</aside>
+
+<script>window.GO2_CAMERA_HOST = "__CAMERA_HOST__";</script>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

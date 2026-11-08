@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go2 Studio</title>
+<link rel="icon" href="/static/icon.svg">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-plug" viewBox="0 0 24 24"><path d="M9 2v5M15 2v5M6 7h12v4a6 6 0 0 1-12 0zM12 17v5"/></symbol>
+  <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4" fill="currentColor"/></symbol>
+  <symbol id="i-walks" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></symbol>
+  <symbol id="i-robot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="9" rx="2"/><path d="M8 17v3M16 17v3M12 8V4M9 12h.01M15 12h.01"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6V14M12 17.5h.01"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 12h7M14 4v9M14 16v4"/></symbol>
+  <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-save" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V4M5 4h11l-2 4 2 4H5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12L4 7.5M12 12v9"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><circle cx="6" cy="14" r="1.2"/><circle cx="10" cy="9" r="1.2"/><circle cx="14" cy="15" r="1.2"/><circle cx="18" cy="10" r="1.2"/><circle cx="12" cy="19" r="1.2"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+</svg>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <div class="wordmark"><b>GO2</b><span>Studio</span></div>
+    </div>
+    <nav class="nav" aria-label="Pages">
+      <button data-page="connect"><svg class="i"><use href="#i-plug"/></svg>Connect <span class="count" id="nav-connect"></span></button>
+      <button data-page="record"><svg class="i"><use href="#i-rec"/></svg>Record <span class="count" id="nav-record"></span></button>
+      <button data-page="walks"><svg class="i"><use href="#i-walks"/></svg>Walks <span class="count" id="nav-walks"></span></button>
+      <button data-page="live"><svg class="i"><use href="#i-robot"/></svg>Live <span class="count" id="nav-live"></span></button>
+      <button data-page="help"><svg class="i"><use href="#i-help"/></svg>Help</button>
+      <div class="sep" style="margin:10px 8px"></div>
+      <button data-act="robotdash" title="The robot's own dashboard, in the browser"><svg class="i"><use href="#i-robot"/></svg>Robot dashboard <svg class="i ext"><use href="#i-ext"/></svg></button>
+    </nav>
+    <div class="bottom">
+      <div class="sep"></div>
+      <nav class="nav">
+        <button data-page="settings"><svg class="i"><use href="#i-gear"/></svg>Settings</button>
+        <button id="devtoggle" title="Ctrl+Shift+D"><svg class="i"><use href="#i-code"/></svg>Developer logs <span class="devpill">ON</span></button>
+      </nav>
+      <div class="ver" id="ver"></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="statusbar" id="statusbar"></header>
+    <div class="guide" id="guide" hidden></div>
+    <div class="content" id="content">
+
+<section class="page" id="page-connect" hidden>
+  <div class="head">
+    <div><h1>Connect</h1><p>From a switched-off robot to ready to record. Each step checks itself every few seconds.</p></div>
+  </div>
+  <div class="card" id="connect-steps"></div>
+  <div class="card">
+    <h2>When you are done with the robot</h2>
+    <p class="muted" style="margin:0 0 12px; font-size:14.5px">Studio adds the robot's address beside your normal one, so the wired port keeps working on other networks. Remove it when you leave if you like.</p>
+    <button class="btn" data-act="addr-off"><svg class="i"><use href="#i-shield"/></svg>Remove the robot address</button>
+    <span class="muted" style="font-size:13.5px; margin-left:10px">Windows asks for administrator permission.</span>
+  </div>
+</section>
+
+<section class="page" id="page-record" hidden>
+  <div class="head">
+    <div><h1>Record a walk</h1><p>The robot records on its own disk, so the cable can come out as soon as the counters are climbing.</p></div>
+  </div>
+  <div class="rec-grid">
+    <div class="card" id="checks-card"></div>
+    <div id="rec-right"></div>
+  </div>
+</section>
+
+<section class="page" id="page-walks" hidden>
+  <div class="head">
+    <div><h1>Walks</h1><p>Everything recorded, on the robot and on this laptop. Make the map turns a recording into the files you open.</p></div>
+  </div>
+  <div id="engine-banner"></div>
+  <div class="folderbar" id="folderbar"></div>
+  <div class="filters" id="filters"></div>
+  <div id="walklist"></div>
+</section>
+
+<section class="page" id="page-live" hidden>
+  <div id="live-off" class="empty" style="margin:34px 40px"></div>
+  <iframe id="live-frame" title="The robot's dashboard" hidden></iframe>
+</section>
+
+<section class="page" id="page-help" hidden>
+  <div class="head"><div><h1>Help</h1><p>Problems this project has already met, and what fixed them.</p></div>
+    <input class="search" id="help-search" style="margin:0; width:300px" placeholder="Search: clock, flat cloud, Foxglove empty"></div>
+  <div class="card" id="help-cards"></div>
+</section>
+
+<section class="page" id="page-settings" hidden>
+  <div class="head"><div><h1>Settings</h1><p>Saved on this laptop, for this Windows user.</p></div></div>
+  <div class="card" id="settings-body"></div>
+</section>
+
+    </div>
+
+    <section class="console" id="console" aria-label="Developer logs">
+      <div class="con-head">
+        <span class="ttl">DEVELOPER LOGS</span>
+        <button class="con-tab" aria-selected="true" data-tab="log">Log</button>
+        <button class="con-tab" data-tab="job">Job output</button>
+        <button class="con-tab" data-tab="req">Requests</button>
+        <button class="con-tab" data-tab="robot">Robot logs</button>
+        <button class="con-tab" data-tab="sys">System</button>
+        <div class="right">
+          <select class="btn" id="con-src" style="padding:3px 6px"><option value="">all sources</option><option>app</option><option>robot</option><option>job</option><option>net</option><option>os</option><option>disk</option><option>ui</option></select>
+          <select class="btn" id="con-lvl" style="padding:3px 6px"><option value="">all levels</option><option value="wrn">warnings and errors</option><option value="err">errors</option></select>
+          <button class="btn" id="con-pause">Pause</button>
+          <button class="btn" id="con-copy">Copy</button>
+          <button class="btn" data-act="open-logs">Open logs folder</button>
+          <button class="btn" data-act="debug-bundle">Export debug bundle</button>
+          <button class="btn ghost" id="con-toggle" title="Show or hide">▾</button>
+        </div>
+      </div>
+      <div class="con-body" id="con-body"></div>
+    </section>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden></aside>
+<div class="modal" id="modal" hidden role="dialog"></div>
+<div class="toast" id="toast" hidden><svg class="i g"><use href="#i-check"/></svg><div><div id="toast-t"></div><div class="actions" id="toast-a"></div></div></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

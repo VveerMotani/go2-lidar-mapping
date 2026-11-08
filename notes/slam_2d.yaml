@@ -1,0 +1,47 @@
+# slam_toolbox settings for a 2D floor plan from the Go2's XT16.
+#
+# Used by slam_2d.sh. A first, deliberately conservative setup: the aim of the
+# first run is a recognisable floor plan, not a tuned one. Change one thing at a
+# time and keep what helps.
+#
+# Frames match the tree the rest of the project publishes:
+#   map --(slam_toolbox)--> odom --(robot odometry)--> base_link --(vendor)--> hesai_lidar
+slam_toolbox:
+  ros__parameters:
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    mode: mapping
+
+    # 5 cm cells. Fine enough to see doorways, coarse enough to stay fast.
+    resolution: 0.05
+    # The XT16 reaches far further, but indoors distant returns come through
+    # windows and off glass and make ghost walls. 20 m covers a large room.
+    max_laser_range: 20.0
+    min_laser_range: 0.3
+
+    # Only add a scan to the map after the robot has moved or turned this much.
+    # Legged robots sway while standing still; too small a threshold and the
+    # sway itself gets drawn in.
+    minimum_travel_distance: 0.2
+    minimum_travel_heading: 0.2
+
+    map_update_interval: 2.0
+    transform_publish_period: 0.05
+    transform_timeout: 0.5
+    tf_buffer_duration: 30.0
+    throttle_scans: 1
+
+    # Loop closure: when the robot comes back somewhere it has been, the map is
+    # straightened. This is what turns drift into a clean map, and why a walk
+    # should end where it started.
+    do_loop_closing: true
+    loop_search_maximum_distance: 3.0
+    loop_match_minimum_chain_size: 10
+
+    use_scan_matching: true
+    use_scan_barycenter: true
+    stack_size_to_use: 40000000
+    enable_interactive_mode: false
+    debug_logging: false

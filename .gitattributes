@@ -1,0 +1,7 @@
+# Scripts and configs here run inside WSL/Linux — keep LF on checkout so a
+# restore never produces `/bin/bash^M: bad interpreter`.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.bin binary

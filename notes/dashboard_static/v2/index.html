@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go2</title>
+<link rel="stylesheet" href="/static/vendor/uPlot.min.css">
+<link rel="stylesheet" href="/static/vendor/gridstack.min.css">
+<link rel="stylesheet" href="/static/v2/app.css">
+<script src="/static/vendor/uPlot.iife.min.js"></script>
+<script src="/static/vendor/gridstack-all.js"></script>
+<script type="importmap">
+{ "imports": { "three": "/static/vendor/three.module.js" } }
+</script>
+<script>window.GO2_CAMERA_HOST = "__CAMERA_HOST__";</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <symbol id="i-live" viewBox="0 0 24 24"><path d="M3 12h4l3-7 4 14 3-7h4"/></symbol>
+  <symbol id="i-rec" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5" fill="currentColor"/></symbol>
+  <symbol id="i-sens" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2"/><path d="M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8"/></symbol>
+  <symbol id="i-det" viewBox="0 0 24 24"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"/></symbol>
+  <symbol id="i-sys" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18h.01"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12L4 7.5M12 12v9"/></symbol>
+  <symbol id="i-top" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/><path d="M12 9v6M9 12h6"/></symbol>
+  <symbol id="i-side" viewBox="0 0 24 24"><path d="M3 17h18M6 17V9h12v8"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4l13 8-13 8z" fill="currentColor"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+  <symbol id="i-lidar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="12" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 7l2-3h4l2 3"/></symbol>
+  <symbol id="i-imu" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="6"/></symbol>
+  <symbol id="i-odom" viewBox="0 0 24 24"><path d="M5 19c3-8 11-6 14-14"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="5" r="2"/></symbol>
+  <symbol id="i-term" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M13 15h4"/></symbol>
+  <symbol id="i-disk" viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></symbol>
+  <symbol id="i-batt" viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="10" rx="2"/><path d="M22 11v2M5 10v4M8 10v4M11 10v4"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 16a8 8 0 1 1 16 0"/><path d="M12 16l4-5"/></symbol>
+  <symbol id="i-att" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3.5 13.5l17-3M8 12h8"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-6"/></symbol>
+  <symbol id="i-feet" viewBox="0 0 24 24"><rect x="9" y="5" width="6" height="14" rx="2"/><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="10" rx="1.5"/><rect x="13" y="3" width="8" height="6" rx="1.5"/><rect x="13" y="11" width="8" height="10" rx="1.5"/><rect x="3" y="15" width="8" height="6" rx="1.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-heat" viewBox="0 0 24 24"><path d="M10 14V5a2 2 0 1 1 4 0v9a4 4 0 1 1-4 0z"/><path d="M12 11v6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+  <symbol id="i-paw" viewBox="0 0 24 24"><ellipse cx="12" cy="16" rx="4.5" ry="3.5"/><circle cx="6" cy="10" r="1.8"/><circle cx="18" cy="10" r="1.8"/><circle cx="9.5" cy="6" r="1.8"/><circle cx="14.5" cy="6" r="1.8"/></symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24"><path d="M7 20v-7l-2-4M7 13h6l3-6 2 1-2 5v7"/><path d="M18 3l1.5-1M20 6h2M19 9l1.5 1"/></symbol>
+  <symbol id="i-stand" viewBox="0 0 24 24"><path d="M4 9h14l2 3M6 9v10M10 9v10M14 9v10M18 12v7"/></symbol>
+  <symbol id="i-lie" viewBox="0 0 24 24"><path d="M3 15h16l2 2M3 19h18M5 15l-1 4M9 15l-1 4M13 15l-1 4"/></symbol>
+  <symbol id="i-sit" viewBox="0 0 24 24"><path d="M5 5h8l3 3v4l2 7M5 5v14M9 12h7M9 12v7"/></symbol>
+  <symbol id="i-balance" viewBox="0 0 24 24"><path d="M12 3v18M5 8h14M5 8l-2 6h4zM19 8l-2 6h4z"/></symbol>
+  <symbol id="i-recover" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+  <symbol id="i-stretch" viewBox="0 0 24 24"><path d="M3 18l5-7h6l6-5M8 11v7M14 11l2 7"/></symbol>
+  <symbol id="i-hips" viewBox="0 0 24 24"><path d="M5 10h12M7 10v9M15 10v9M17 10l3-3M3 7l2 3"/><path d="M19 14l2 2M19 18l2-2"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+  <symbol id="i-dance" viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></symbol>
+  <symbol id="i-scrape" viewBox="0 0 24 24"><path d="M4 18h16M6 14l3-3 3 3 3-3 3 3"/></symbol>
+  <symbol id="i-flip" viewBox="0 0 24 24"><path d="M12 4a8 8 0 1 0 8 8"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-jump" viewBox="0 0 24 24"><path d="M4 20h16M12 16V4M7 9l5-5 5 5"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v6H4V6h6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+  <symbol id="i-map" viewBox="0 0 24 24"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15M15 6v15"/></symbol>
+</svg>
+
+<div class="shell">
+  <nav class="rail" aria-label="Pages">
+    <div class="mark"><b>GO<span>2</span></b></div>
+    <button data-p="live" aria-current="page"><svg class="i"><use href="#i-live"/></svg>Live</button>
+    <button data-p="record"><svg class="i"><use href="#i-rec"/></svg>Record<span class="badge" id="rec-badge" style="display:none"></span></button>
+    <button data-p="actions"><svg class="i"><use href="#i-paw"/></svg>Actions</button>
+    <button data-p="sensors"><svg class="i"><use href="#i-sens"/></svg>Sensors</button>
+    <button data-p="details"><svg class="i"><use href="#i-det"/></svg>Details</button>
+    <button data-p="system"><svg class="i"><use href="#i-sys"/></svg>System</button>
+    <div class="spacer"></div>
+    <div class="ver"><a href="/" style="color:inherit">old<br>page</a></div>
+  </nav>
+
+  <div>
+    <header>
+      <div class="title"><b>GO2</b><span id="host"></span></div>
+      <span class="mode" id="mode">-</span>
+      <div class="pills">
+        <span class="pill" id="linkpill"><i class="led off"></i><b>LINK</b> -</span>
+        <span class="pill" id="clockpill"><i class="led off"></i><b>CLOCK</b> -</span>
+        <span class="pill" id="recpill"><i class="led off"></i><b>REC</b> idle</span>
+      </div>
+    </header>
+
+    <div class="offline" id="offline"><svg class="i bad"><use href="#i-warn"/></svg><div><b>Robot out of reach.</b> <span class="t2" id="offline-t">Showing the last answers.</span></div></div>
+    <div class="alert hide" id="alert">
+      <svg class="i"><use href="#i-warn"/></svg>
+      <div id="alert-t"></div>
+      <button class="btn go" data-a="setclock"><svg class="i"><use href="#i-clock"/></svg>Set from this device</button>
+    </div>
+
+    <main>
+<!-- =================================================================== LIVE -->
+<section class="page" id="p-live">
+  <div class="toolbar">
+    <h1>LIVE</h1>
+    <div class="r">
+      <span class="normal hint" id="layout-name">Layout: Mission</span>
+      <button class="btn normal" data-a="edit"><svg class="i"><use href="#i-grid"/></svg>Customize</button>
+      <div class="editing">
+        <span class="hint">Drag a card by its title, resize from its corner.</span>
+        <button class="btn" data-a="add"><svg class="i"><use href="#i-plus"/></svg>Add card</button>
+        <button class="btn ghost" data-a="reset">Reset</button>
+        <button class="btn primary" data-a="done"><svg class="i"><use href="#i-check"/></svg>Done</button>
+      </div>
+    </div>
+  </div>
+  <div class="grid-stack" id="live-grid"></div>
+</section>
+
+<!-- ================================================================= RECORD -->
+<section class="page" id="p-record" hidden>
+  <div class="rec">
+    <div class="card"><div class="hd"><span class="cap">Pre-flight</span></div><div class="bd">
+      <div class="preflight"><svg id="pf-ring" viewBox="0 0 210 210"></svg><div class="val"><b id="pf-n">-</b><span id="pf-l">CHECKING</span></div></div>
+      <div id="checks"></div>
+    </div></div>
+
+    <div style="display:grid; gap:14px; min-width:0">
+      <div class="card" id="launch"><div class="hd"><span class="cap">New walk</span></div><div class="bd launch">
+        <div class="field"><label for="w-name">Name <span class="t3">(letters, digits, dash, underscore)</span></label><input class="in" id="w-name" maxlength="64"></div>
+        <div class="opts">
+          <div class="row"><span>Depth camera<small id="depth-note">RealSense depth, lossless</small></span><div><div class="toggle" role="switch" aria-checked="false" id="o-depth" style="padding:6px 10px; display:inline-flex"><span class="sw"><i></i></span><span class="tl">Off</span></div></div></div>
+          <div class="row" data-needs="depth"><span>Resolution</span><select class="in" id="o-res" style="max-width:220px"></select></div>
+          <div class="row" data-needs="depth"><span>Frame rate</span><div><div class="seg" id="o-fps"></div></div></div>
+          <div class="row" data-needs="depth"><span>Colour stream<small>RGB beside depth, for colouring the map</small></span><div><div class="toggle" role="switch" aria-checked="false" id="o-color" style="padding:6px 10px; display:inline-flex"><span class="sw"><i></i></span><span class="tl">Off</span></div></div></div>
+          <div class="row" id="depth-apply" hidden><span>Not applied yet<small id="depth-apply-t"></small></span><div><button class="btn primary sm" data-a="depth-apply">Apply</button> <button class="btn sm" data-a="depth-undo">Undo</button></div></div>
+          <div class="row"><span>Stop by itself<small>ends the walk even out of reach</small></span><div><div class="seg" id="o-stop"><button data-v="0" aria-pressed="true">Off</button><button data-v="2">2 min</button><button data-v="5">5 min</button><button data-v="10">10 min</button></div></div></div>
+          <div class="row"><span>LiDAR copy to laptop<small>live 3D view only; walks record it anyway</small></span><div><div class="toggle" role="switch" aria-checked="false" id="o-relay" style="padding:6px 10px; display:inline-flex"><span class="sw"><i></i></span><span class="tl">Off</span></div></div></div>
+          <div class="estimate"><span>About <b id="est-rate">-</b> a minute</span><span><b id="est-fit">-</b> fit on the robot</span></div>
+        </div>
+        <div class="job" id="sens-job"></div>
+        <button class="btn primary bigstart" id="start" disabled><svg class="i" style="width:20px;height:20px"><use href="#i-play"/></svg>START WALK</button>
+        <div class="t2" style="text-align:center; font-weight:600; font-size:13px" id="startwhy"></div>
+      </div></div>
+
+      <div class="card" id="live-rec" hidden><div class="bd" style="padding-top:16px">
+        <div style="display:flex; align-items:center; gap:18px">
+          <div><div class="recbadge"><i></i>RECORDING</div><div class="timer" id="timer">00:00</div><div class="t3" style="font-weight:600" id="rec-name"></div></div>
+          <button class="btn danger" style="margin-left:auto; padding:14px 22px; font-size:16px" data-a="stop"><svg class="i"><use href="#i-stop"/></svg>STOP</button>
+        </div>
+        <div class="minis" style="margin-top:16px" id="minis"></div>
+        <div style="display:flex; justify-content:space-between; margin-top:12px; font-weight:600; font-size:13px"><span class="t2" id="rec-size"></span><span class="t2" id="rec-left"></span></div>
+      </div></div>
+
+      <div class="card report" id="report" hidden><div class="hd"><span class="cap" id="report-t">Walk report</span><span class="r"><button class="btn ghost sm" data-a="report-close">Close</button></span></div><div class="bd" id="report-b"></div></div>
+
+      <div class="card"><div class="hd"><span class="cap">Walks on the robot</span><span class="r t3" style="font:600 12px var(--num)" id="walks-sum"></span></div>
+        <div style="overflow-x:auto"><table class="walks" id="walks-t"></table></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ ACTIONS -->
+<section class="page" id="p-actions" hidden>
+  <div class="act-top">
+    <div class="safety"><svg class="i"><use href="#i-warn"/></svg><div><b>Clear about 1 m around the robot and keep the remote in hand.</b> <span class="t2">Moves run one at a time and the remote always overrides. Paused while a walk records. The LiDAR on top rules out flips and jumps.</span></div></div>
+    <button class="btn danger stopbig" data-act="stop"><svg class="i" style="width:20px;height:20px"><use href="#i-stop"/></svg>STOP</button>
+  </div>
+  <div id="action-groups"></div>
+</section>
+
+<!-- ================================================================ SENSORS -->
+<section class="page" id="p-sensors" hidden>
+  <div class="grid3" id="sensor-cards"></div>
+</section>
+
+<!-- ================================================================ DETAILS -->
+<section class="page" id="p-details" hidden>
+  <div class="grid2">
+    <div class="card"><div class="hd"><span class="cap">Motor temperatures</span><span class="r t3" style="font:600 12px var(--num)">warn at 70 °C</span></div><div class="bd"><div class="heat" id="dheat"></div></div></div>
+    <div class="card"><div class="hd"><span class="cap">Joints</span></div><div class="bd" style="padding-top:4px"><table class="walks" id="djtab"></table></div></div>
+  </div>
+</section>
+
+<!-- ================================================================= SYSTEM -->
+<section class="page" id="p-system" hidden>
+  <div class="grid2">
+    <div class="card"><div class="hd"><span class="cap">Programs on the robot</span><span class="r t3" style="font:600 12px var(--num)" id="autostart"></span></div><div class="bd" id="programs"></div></div>
+    <div class="card"><div class="hd"><span class="cap">This robot</span></div><div class="bd" id="sysinfo"></div></div>
+    <div class="card" style="grid-column:1 / -1"><div class="hd"><svg class="i t3"><use href="#i-term"/></svg><span class="cap" id="log-t">Log</span><span class="r"><div class="seg" id="log-seg"></div><button class="btn sm" data-a="log-refresh">Refresh</button></span></div>
+      <pre class="log" id="log" style="border-radius:0 0 4px 4px">Loading...</pre></div>
+  </div>
+</section>
+    </main>
+  </div>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden>
+  <div style="display:flex; align-items:center"><h2>Cards</h2><button class="btn ghost sm" style="margin-left:auto" data-a="close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="sub">Start from a layout, then add or remove single cards. Saved on the robot, so every device sees it.</div>
+  <span class="cap grp">Layouts</span>
+  <div class="presets" id="presets"></div>
+  <span class="cap grp">All cards</span>
+  <div class="catalog" id="catalog"></div>
+</aside>
+<div class="scrim" id="mscrim" hidden></div>
+<div class="modal" id="modal" hidden><h3 id="m-title"></h3><p id="m-text"></p><div class="row"><button class="btn ghost" data-m-close>Cancel</button><button class="btn primary" id="m-go">Do it</button></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script type="module" src="/static/v2/app.js"></script>
+</body>
+</html>
